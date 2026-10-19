@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fff2f7">
+<title>Bloom & Heart — Mini game 20/10</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --pink: #ef76a7;
+  --pink-dark: #a83268;
+  --rose: #ffd5e5;
+  --blush: #fff2f7;
+  --ink: light-dark(#5c2942, #ffeaf3);
+  --muted: light-dark(#8d5d73, #d7a8bc);
+  --paper: light-dark(#fffafd, #2a1722);
+  --line: light-dark(#f2c9da, #654054);
+  --shadow: 0 16px 42px rgba(167, 57, 105, .12);
+  font-family: "Segoe UI", "Arial", "Noto Sans", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--blush); color: var(--ink); }
+button { font: inherit; }
+.app-root {
+  min-height: 100vh;
+  width: 100%;
+  border-radius: 0;
+  overflow: hidden;
+  background: light-dark(linear-gradient(145deg, #fff6fa 0%, #ffe8f1 48%, #fff7fb 100%), linear-gradient(145deg, #24131d, #321a2a 55%, #24131d));
+  color: var(--ink);
+  position: relative;
+  isolation: isolate;
+}
+.app-root::before, .app-root::after { content: "✿  ♡  ✿"; position: absolute; z-index: -1; color: light-dark(rgba(228,91,146,.16), rgba(255,153,194,.13)); font-size: clamp(34px, 6vw, 76px); letter-spacing: .25em; pointer-events: none; }
+.app-root::before { top: 100px; left: -25px; transform: rotate(-18deg); }
+.app-root::after { right: -25px; bottom: 100px; transform: rotate(18deg); }
+.shell { max-width: 1080px; margin: auto; padding: 24px 18px 52px; }
+.hero { text-align: center; padding: 22px 8px 20px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; background: var(--paper); color: var(--pink-dark); font-weight: 750; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+h1 { font-size: clamp(32px, 6vw, 58px); line-height: 1.08; letter-spacing: -.04em; margin: 16px 0 10px; }
+.gradient { background: linear-gradient(90deg, #d94d8b, #f19bba, #b8477d); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p { color: var(--muted); max-width: 620px; margin: 0 auto; line-height: 1.7; font-size: 15px; }
+.progress-card { max-width: 860px; margin: 12px auto 24px; padding: 18px; border: 1px solid var(--line); border-radius: 22px; background: var(--paper); box-shadow: var(--shadow); }
+.progress-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.progress-head strong { font-size: 15px; }
+.progress-head span { font-size: 13px; color: var(--muted); }
+.progress-track { height: 9px; border-radius: 20px; background: light-dark(#f9dce8, #4d2a3d); overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #e96fa4, #f6abc7); border-radius: inherit; transition: width .35s ease; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+.step { display: flex; gap: 9px; align-items: center; padding: 10px; border: 1px solid var(--line); border-radius: 14px; color: var(--muted); font-size: 12px; min-width: 0; }
+.step .num { width: 28px; height: 28px; flex: 0 0 28px; display: grid; place-items: center; border-radius: 50%; background: light-dark(#ffe4ef, #4d2a3d); font-weight: 800; }
+.step.active { color: var(--pink-dark); border-color: var(--pink); background: light-dark(#fff0f6, #3c2030); }
+.step.done .num { background: #df6599; color: white; }
+.step b { display: block; font-size: 13px; color: var(--ink); }
+.stage { max-width: 860px; margin: 0 auto 22px; border: 1px solid var(--line); border-radius: 26px; padding: clamp(18px, 4vw, 30px); background: var(--paper); box-shadow: var(--shadow); }
+.stage-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.stage-kicker { color: var(--pink-dark); font-weight: 800; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+h2 { font-size: clamp(23px, 4vw, 31px); margin: 6px 0 5px; letter-spacing: -.025em; }
+.sub { color: var(--muted); line-height: 1.6; font-size: 14px; margin: 0; }
+.pill { white-space: nowrap; border-radius: 999px; padding: 8px 12px; background: light-dark(#ffebf3, #48283a); color: var(--pink-dark); font-size: 12px; font-weight: 800; }
+.question { padding: 17px; border: 1px solid var(--line); border-radius: 18px; margin: 12px 0; background: light-dark(#fff7fb, #321d2a); }
+.question h3 { font-size: 16px; line-height: 1.5; margin: 0 0 12px; }
+.answers { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
+.answer { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); padding: 12px 13px; text-align: left; cursor: pointer; transition: .18s ease; min-height: 44px; }
+.answer:hover:not(:disabled) { border-color: var(--pink); transform: translateY(-1px); }
+.answer:disabled { cursor: default; opacity: .95; }
+.answer.correct { background: light-dark(#e6f8ed, #20392c); border-color: #56b77b; color: light-dark(#1f7042, #a9f0c3); }
+.answer.wrong { background: light-dark(#fff0f2, #46222b); border-color: #e37c90; color: light-dark(#a43c55, #ffb7c5); }
+.feedback { min-height: 24px; margin-top: 10px; font-size: 13px; font-weight: 700; line-height: 1.5; }
+.feedback.good { color: light-dark(#24844d, #9de4b8); }
+.feedback.bad { color: light-dark(#b84260, #ffafc2); }
+.btn { border: 0; border-radius: 13px; background: linear-gradient(100deg, #df5d98, #ef8db6); color: white; padding: 13px 18px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 18px rgba(210,76,137,.2); transition: transform .18s ease, filter .18s ease; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.03); }
+.btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.btn.secondary { background: transparent; color: var(--pink-dark); border: 1px solid var(--line); box-shadow: none; }
+.action-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+.small-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.memory-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 11px; max-width: 540px; margin: 18px auto; }
+.memory-card { aspect-ratio: 1 / 1; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(145deg, #f6a9c7, #e86f9f); color: white; cursor: pointer; font-size: clamp(23px, 5vw, 38px); display: grid; place-items: center; box-shadow: 0 5px 12px rgba(190,72,125,.13); transition: transform .2s ease, background .2s ease; }
+.memory-card:hover:not(:disabled) { transform: translateY(-2px); }
+.memory-card.revealed, .memory-card.matched { background: light-dark(#fff1f7, #3d2232); color: var(--pink-dark); border-color: #ed9cbd; }
+.memory-card.matched { box-shadow: inset 0 0 0 2px #77c998; }
+.memory-card:disabled { cursor: default; }
+.game-stat { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.stat { padding: 8px 12px; border-radius: 999px; background: light-dark(#fff0f6, #48283a); font-size: 13px; font-weight: 750; }
+.catch-area { position: relative; min-height: 300px; overflow: hidden; border: 1px dashed #e99cbb; border-radius: 20px; background: light-dark(radial-gradient(circle at 50% 20%, #fff 0, #fff0f6 70%), #321d2a); margin: 16px 0; touch-action: manipulation; }
+.catch-area::before { content: "✿"; position: absolute; top: 12px; left: 18px; font-size: 30px; color: #e8a2be; opacity: .65; }
+.catch-heart { position: absolute; border: 0; background: transparent; padding: 0; cursor: pointer; font-size: 34px; line-height: 1; filter: drop-shadow(0 4px 4px rgba(187,57,112,.18)); animation: floaty var(--float-duration, 1.1s) ease-in-out infinite alternate; }
+@keyframes floaty { from { transform: translateY(2px) rotate(-7deg); } to { transform: translateY(-7px) rotate(7deg); } }
+.timerbar { height: 9px; background: light-dark(#f8dce8, #4c293b); border-radius: 99px; overflow: hidden; margin: 10px 0; }
+.timerfill { height: 100%; width: 100%; background: linear-gradient(90deg, #f0a0c0, #df5c96); transition: width .1s linear; }
+.wheel-wrap { display: grid; grid-template-columns: minmax(250px, 1fr) minmax(200px, .8fr); align-items: center; gap: 24px; }
+.wheel-box { position: relative; width: min(100%, 430px); margin: 0 auto; aspect-ratio: 1; padding: 7px; border-radius: 50%; background: linear-gradient(135deg, #fff9dc 0%, #e8bd68 18%, #fff0b7 32%, #bd8740 50%, #ffe6a0 69%, #d6a04f 84%, #fff7d4 100%); box-shadow: 0 18px 32px rgba(155,51,98,.20), inset 0 2px 3px #fff; }
+#wheel { position: relative; z-index: 1; display: block; width: 100%; height: 100%; border-radius: 50%; filter: drop-shadow(0 7px 10px rgba(112,37,70,.22)); }
+.pointer { position: absolute; z-index: 4; top: -8px; left: 50%; transform: translateX(-50%); width: 36px; height: 48px; background: linear-gradient(100deg, #b83e70, #f8a6c7 45%, #a83268); clip-path: polygon(50% 100%, 5% 13%, 17% 0, 83% 0, 95% 13%); filter: drop-shadow(0 4px 3px rgba(92,27,57,.3)); }
+.pointer::after { content: ""; position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 7px; height: 7px; border-radius: 50%; background: #fff4cb; }
+.wheel-center { position: absolute; z-index: 3; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 62px; height: 62px; border-radius: 50%; border: 5px solid #fff8df; outline: 3px solid #c99a4e; background: radial-gradient(circle at 32% 25%, #ffdfeb, #dc5d96 52%, #9f2e60); box-shadow: 0 4px 12px #7d294e99, inset 0 2px 4px #fff9; pointer-events: none; }
+.wheel-center::before { content: "✿"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff7dc; font-size: 29px; text-shadow: 0 1px 2px #8c2e55; }
+.wheel-side { text-align: center; }
+.wheel-side .big-number { font-size: clamp(44px, 7vw, 70px); line-height: 1.05; font-weight: 900; color: var(--pink-dark); letter-spacing: -.05em; }
+.wheel-side p { color: var(--muted); line-height: 1.65; font-size: 14px; }
+.wheel-side .btn { width: 100%; max-width: 270px; }
+.result-card { padding: 16px; border: 1px solid var(--line); border-radius: 17px; background: light-dark(#fff0f6, #3c2131); margin: 14px 0; }
+.result-card strong { display: block; margin-bottom: 6px; }
+.code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; font-size: 12px; }
+footer { text-align: center; color: var(--muted); font-size: 12px; line-height: 1.7; padding: 8px 10px 20px; }
+[hidden] { display: none !important; }
+@media (max-width: 620px) {
+  .shell { padding: 14px 12px 32px; }
+  .hero { padding-top: 16px; }
+  .steps { gap: 6px; }
+  .step { padding: 8px 6px; flex-direction: column; text-align: center; gap: 5px; }
+  .step b { font-size: 11px; }
+  .step span:last-child { font-size: 10px; }
+  .answers { grid-template-columns: 1fr; }
+  .stage-head { flex-direction: column; }
+  .memory-grid { gap: 7px; }
+  .memory-card { border-radius: 12px; }
+  .wheel-wrap { grid-template-columns: 1fr; }
+  .wheel-box { width: min(100%, 360px); }
+  .catch-area { min-height: 270px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="app-root">
+  <main class="shell">
+    <header class="hero">
+      <div class="eyebrow">🌷 20/10 · Ngày Phụ nữ Việt Nam</div>
+      <h1>Bloom <span class="gradient">& Heart</span></h1>
+      <p>Vượt qua ba thử thách nhỏ để mở khóa vòng quay may mắn đặc biệt. Chúc bạn có một ngày 20/10 thật ngọt ngào! ♡</p>
+    </header>
+    <section class="progress-card" aria-label="Tiến trình trò chơi">
+      <div class="progress-head"><strong>🌸 Hành trình nhận xu</strong><span id="progressLabel">Đã hoàn thành 0/3 trò chơi</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="steps">
+        <div class="step active" id="step1"><span class="num">1</span><span><b>Đố vui 20/10</b>2/3 câu đúng</span></div>
+        <div class="step" id="step2"><span class="num">2</span><span><b>Lật thẻ</b>Ghép 4 cặp</span></div>
+        <div class="step" id="step3"><span class="num">3</span><span><b>Bắt tim</b>10 tim / 15 giây</span></div>
+      </div>
+    </section>
+
+    <section class="stage" id="quizStage">
+      <div class="stage-head"><div><div class="stage-kicker">Thử thách 01</div><h2>Đố vui ngày 20/10</h2><p class="sub">Chọn đáp án cho từng câu — kết quả sẽ hiện ngay sau mỗi lần chọn.</p></div><span class="pill" id="quizScore">Đúng 0/3</span></div>
+      <div id="quizQuestions"></div>
+      <div class="action-row"><span class="small-note" id="quizMessage" aria-live="polite">Cần đúng ít nhất 2/3 câu để mở khóa trò tiếp theo.</span><button class="btn" id="quizContinue" disabled>Tiếp tục →</button></div>
+    </section>
+
+    <section class="stage" id="memoryStage" hidden>
+      <div class="stage-head"><div><div class="stage-kicker">Thử thách 02</div><h2>Lật thẻ tìm cặp</h2><p class="sub">Lật 2 thẻ mỗi lượt và tìm đủ 4 cặp hình giống nhau.</p></div><span class="pill" id="memoryScore">Đã ghép 0/4 cặp</span></div>
+      <div class="game-stat"><span class="stat" id="movesStat">Lượt lật: 0</span><span class="stat">8 thẻ · 4 cặp</span></div>
+      <div class="memory-grid" id="memoryGrid"></div>
+      <div class="action-row"><span class="small-note" id="memoryMessage" aria-live="polite">Mẹo nhỏ: hãy ghi nhớ vị trí các hình đã lật nhé!</span><button class="btn" id="memoryContinue" disabled>Đến thử thách bắt tim →</button></div>
+    </section>
+
+    <section class="stage" id="catchStage" hidden>
+      <div class="stage-head"><div><div class="stage-kicker">Thử thách 03</div><h2>Săn đồ dễ thương trong 15 giây</h2><p class="sub">Chạm thật nhanh vào tim, hoa, mây, hộp quà và những món quà nhỏ xuất hiện khắp khu vực. Bắt được 10 hình để mở khóa vòng quay nhé!</p></div><span class="pill" id="catchScore">💗 0/10 hình</span></div>
+      <div class="game-stat"><span class="stat" id="timerText">⏱ 15 giây</span><span class="stat">Mục tiêu: 10 hình đáng yêu</span></div>
+      <div class="timerbar"><div class="timerfill" id="timerFill"></div></div>
+      <div class="catch-area" id="catchArea" aria-label="Khu vực bắt tim"><div style="position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:13px;pointer-events:none" id="catchHint">Nhấn “Bắt đầu” để chơi 💞</div></div>
+      <div class="action-row"><span class="small-note" id="catchMessage" aria-live="polite">Sẵn sàng chưa nào?</span><button class="btn" id="catchStart">Bắt đầu 15 giây</button></div>
+    </section>
+
+    <section class="stage" id="wheelStage" hidden>
+      <div class="stage-head"><div><div class="stage-kicker">Phần thưởng đặc biệt</div><h2>Vòng quay may mắn</h2><p class="sub">Bạn đã vượt qua cả 3 thử thách! Nhấn nút để quay bánh xe. Kim chỉ đúng giá trị xu nhận được.</p></div><span class="pill">🔓 Đã mở khóa</span></div>
+      <div class="wheel-wrap">
+        <div class="wheel-box"><div class="pointer" aria-hidden="true"></div><canvas id="wheel" width="600" height="600" aria-label="Vòng quay may mắn từ 0 đến 100 xu"></canvas><div class="wheel-center"></div></div>
+        <div class="wheel-side"><div class="small-note">PHẦN THƯỞNG CỦA BẠN</div><div class="big-number" id="prizeNumber">—</div><div style="font-weight:800;color:var(--pink-dark);margin-top:2px">XU 🌸</div><p id="wheelMessage">Vòng quay chỉ có một lượt trong phiên chơi này. Chúc bạn may mắn!</p><button class="btn" id="spinButton">🌸 Quay bánh xe</button><p class="small-note">Các mốc chính trên bánh xe: 0 · 10 · 20 · 30 · 40 · 50 · 60 · 70 · 80 · 90 · 100.</p></div>
+      </div>
+      <div class="result-card" id="ticketCard" hidden><strong>🎟 Phiếu kết quả để gửi người tổ chức</strong><div class="code" id="ticketCode"></div><p class="small-note">Phiếu này chỉ ghi nhận kết quả hiển thị trong trình duyệt, không phải xác minh từ máy chủ.</p><div class="action-row"><button class="btn secondary" id="copyTicket">Sao chép phiếu</button><span class="small-note" id="copyStatus" aria-live="polite"></span></div></div>
+    </section>
+    <footer>Made with ♡ for 20/10 · Xu là phần thưởng hiển thị. Người tổ chức cần tự xác minh phiếu trước khi trao thưởng; phiên bản này chưa có máy chủ chống gian lận.</footer>
+  </main>
+</div>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const completed = [false, false, false];
+  let activeStage = 0;
+  const stageEls = [$('quizStage'), $('memoryStage'), $('catchStage'), $('wheelStage')];
+  function setStage(index) {
+    activeStage = index;
+    stageEls.forEach((el, i) => el.hidden = i !== index);
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function updateProgress() {
+    const count = completed.filter(Boolean).length;
+    $('progressLabel').textContent = `Đã hoàn thành ${count}/3 trò chơi`;
+    $('progressFill').style.width = `${count / 3 * 100}%`;
+    completed.forEach((done, i) => {
+      const step = $('step' + (i + 1));
+      step.classList.toggle('done', done);
+      step.classList.toggle('active', !done && i === count);
+      step.querySelector('.num').textContent = done ? '✓' : String(i + 1);
+    });
+  }
+
+  // Quiz: each answer is evaluated immediately, and every question locks after selection.
+  const questions = [
+    { q: 'Ngày Phụ nữ Việt Nam được tổ chức vào ngày nào?', a: ['8/3', '20/10', '20/11', '1/6'], correct: 1, explain: 'Chính xác! Ngày Phụ nữ Việt Nam là 20/10.' },
+    { q: 'Món quà tinh thần nào thường khiến người nhận vui nhất?', a: ['Sự quan tâm chân thành', 'Chỉ cần quà thật đắt', 'Không cần lời chúc', 'Quên mất ngày đặc biệt'], correct: 0, explain: 'Đúng rồi! Sự quan tâm chân thành luôn rất đáng quý.' },
+    { q: 'Màu nào thường gợi cảm giác dịu dàng, ngọt ngào trong chủ đề này?', a: ['Xám bê tông', 'Đen tuyền', 'Hồng pastel', 'Nâu đất'], correct: 2, explain: 'Chuẩn luôn! Hồng pastel tạo cảm giác dịu dàng và ấm áp.' }
+  ];
+  const quizAnswers = Array(questions.length).fill(null);
+  const quizHost = $('quizQuestions');
+  questions.forEach((question, qi) => {
+    const card = document.createElement('article'); card.className = 'question';
+    const title = document.createElement('h3'); title.textContent = `${qi + 1}. ${question.q}`; card.appendChild(title);
+    const answers = document.createElement('div'); answers.className = 'answers';
+    const feedback = document.createElement('div'); feedback.className = 'feedback'; feedback.id = `feedback${qi}`; feedback.setAttribute('aria-live','polite');
+    question.a.forEach((answer, ai) => {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'answer'; button.textContent = `${String.fromCharCode(65 + ai)}. ${answer}`;
+      button.addEventListener('click', () => {
+        if (quizAnswers[qi] !== null) return;
+        quizAnswers[qi] = ai;
+        [...answers.children].forEach((b, bi) => {
+          b.disabled = true;
+          if (bi === question.correct) b.classList.add('correct');
+          if (bi === ai && ai !== question.correct) b.classList.add('wrong');
+        });
+        const correct = ai === question.correct;
+        feedback.className = `feedback ${correct ? 'good' : 'bad'}`;
+        feedback.textContent = correct ? `✓ ${question.explain}` : `✕ Chưa đúng. Đáp án đúng: ${question.a[question.correct]}.`;
+        const score = quizAnswers.filter((value, idx) => value === questions[idx].correct).length;
+        $('quizScore').textContent = `Đúng ${score}/3`;
+        const answered = quizAnswers.every(value => value !== null);
+        if (answered) {
+          const passed = score >= 2;
+          $('quizMessage').textContent = passed ? `Tuyệt vời! Bạn đúng ${score}/3 câu — đã qua trò 1/3.` : `Bạn đúng ${score}/3 câu. Cần ít nhất 2 câu đúng để mở khóa. Hãy thử lại nhé!`;
+          $('quizContinue').disabled = !passed;
+          if (passed) { completed[0] = true; updateProgress(); }
+        }
+      });
+      answers.appendChild(button);
+    });
+    card.append(answers, feedback); quizHost.appendChild(card);
+  });
+  $('quizContinue').addEventListener('click', () => { if (completed[0]) setStage(1); });
+
+  // Memory match: 8 cards, 4 pairs.
+  const symbols = ['🌷','💗','🦋','🌸'];
+  let deck = [], firstCard = null, lockBoard = false, matchedPairs = 0, moves = 0;
+  function initMemory() {
+    deck = [...symbols, ...symbols].map((symbol, i) => ({ symbol, id: i }));
+    for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+    const grid = $('memoryGrid'); grid.innerHTML = ''; firstCard = null; lockBoard = false; matchedPairs = 0; moves = 0;
+    $('memoryScore').textContent = 'Đã ghép 0/4 cặp'; $('movesStat').textContent = 'Lượt lật: 0'; $('memoryContinue').disabled = true;
+    deck.forEach((item, index) => {
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'memory-card'; btn.textContent = '♡'; btn.setAttribute('aria-label', `Thẻ ${index + 1}, úp`); btn.dataset.index = index;
+      btn.addEventListener('click', () => flipCard(btn, item)); grid.appendChild(btn);
+    });
+  }
+  function flipCard(btn, item) {
+    if (lockBoard || btn.classList.contains('revealed') || btn.classList.contains('matched')) return;
+    btn.classList.add('revealed'); btn.textContent = item.symbol; btn.setAttribute('aria-label', `Thẻ ${Number(btn.dataset.index) + 1}, ${item.symbol}`);
+    if (!firstCard) { firstCard = { btn, item }; return; }
+    moves++; $('movesStat').textContent = `Lượt lật: ${moves}`;
+    if (firstCard.item.symbol === item.symbol) {
+      firstCard.btn.classList.add('matched'); btn.classList.add('matched'); firstCard.btn.disabled = true; btn.disabled = true;
+      matchedPairs++; $('memoryScore').textContent = `Đã ghép ${matchedPairs}/4 cặp`; $('memoryMessage').textContent = matchedPairs === 4 ? 'Xuất sắc! Bạn đã ghép đủ 4 cặp — qua trò 2/3!' : 'Tìm được một cặp rồi! Tiếp tục nhé 💗';
+      firstCard = null;
+      if (matchedPairs === 4) { completed[1] = true; $('memoryContinue').disabled = false; updateProgress(); }
+    } else {
+      lockBoard = true; const prior = firstCard; firstCard = null;
+      window.setTimeout(() => {
+        [prior.btn, btn].forEach(el => { el.classList.remove('revealed'); el.textContent = '♡'; el.setAttribute('aria-label', `Thẻ ${Number(el.dataset.index) + 1}, úp`); });
+        lockBoard = false;
+      }, 720);
+    }
+  }
+  initMemory();
+  $('memoryContinue').addEventListener('click', () => { if (completed[1]) setStage(2); });
+
+  // Catch hearts, 15-second timed game.
+  let catchRunning = false, catchCount = 0, timeLeft = 15, tickHandle = null, spawnHandle = null, endTime = 0;
+  function updateCatchScore() { $('catchScore').textContent = `💗 ${catchCount}/10 hình`; }
+  function spawnHeart() {
+    if (!catchRunning) return;
+    const area = $('catchArea');
+    const cuteThings = [
+      { icon: '💗', label: 'trái tim', points: 3 },
+      { icon: '💖', label: 'trái tim lấp lánh', points: 2 },
+      { icon: '💕', label: 'đôi tim', points: 2 },
+      { icon: '🌸', label: 'bông hoa', points: 2 },
+      { icon: '🌼', label: 'hoa nhỏ', points: 2 },
+      { icon: '☁️', label: 'đám mây', points: 2 },
+      { icon: '🎁', label: 'hộp quà', points: 2 },
+      { icon: '🦋', label: 'bươm bướm', points: 2 },
+      { icon: '⭐', label: 'ngôi sao', points: 2 },
+      { icon: '🍓', label: 'quả dâu', points: 2 },
+      { icon: '🐰', label: 'thỏ con', points: 2 },
+      { icon: '🧁', label: 'bánh cupcake', points: 2 }
+    ];
+    const item = cuteThings[Math.floor(Math.random() * cuteThings.length)];
+    const heart = document.createElement('button');
+    heart.type = 'button';
+    heart.className = 'catch-heart';
+    heart.textContent = item.icon;
+    heart.setAttribute('aria-label', `Bắt ${item.label}`);
+    heart.title = item.label;
+    heart.style.setProperty('--float-duration', `${0.8 + Math.random() * 0.7}s`);
+    heart.style.fontSize = `${30 + Math.floor(Math.random() * 13)}px`;
+    const maxX = Math.max(10, area.clientWidth - 58), maxY = Math.max(10, area.clientHeight - 62);
+    heart.style.left = `${10 + Math.random() * (maxX - 10)}px`;
+    heart.style.top = `${18 + Math.random() * (maxY - 18)}px`;
+    heart.addEventListener('click', () => {
+      if (!catchRunning || heart.dataset.caught) return;
+      heart.dataset.caught = '1';
+      catchCount++;
+      updateCatchScore();
+      heart.textContent = '✨';
+      heart.style.transform = 'scale(1.4)';
+      window.setTimeout(() => heart.remove(), 100);
+      if (catchCount >= 10) finishCatch(true);
+    });
+    area.appendChild(heart);
+    window.setTimeout(() => heart.remove(), 1500);
+  }
+  function startCatch() {
+    if (catchRunning) return;
+    catchRunning = true; catchCount = 0; timeLeft = 15; endTime = Date.now() + 15000;
+    $('catchArea').querySelectorAll('.catch-heart').forEach(el => el.remove()); $('catchHint').hidden = true;
+    $('catchStart').disabled = true; $('catchStart').textContent = 'Đang chơi…'; $('catchMessage').textContent = 'Nhanh tay nào! Bắt đủ 10 hình đáng yêu nhé.'; updateCatchScore();
+    $('timerText').textContent = '⏱ 15 giây'; $('timerFill').style.width = '100%'; spawnHeart(); spawnHandle = window.setInterval(spawnHeart, 420);
+    tickHandle = window.setInterval(() => {
+      timeLeft = Math.max(0, (endTime - Date.now()) / 1000);
+      $('timerText').textContent = `⏱ ${Math.ceil(timeLeft)} giây`; $('timerFill').style.width = `${timeLeft / 15 * 100}%`;
+      if (timeLeft <= 0) finishCatch(catchCount >= 10);
+    }, 80);
+  }
+  function finishCatch(won) {
+    if (!catchRunning) return; catchRunning = false;
+    window.clearInterval(tickHandle); window.clearInterval(spawnHandle);
+    $('catchArea').querySelectorAll('.catch-heart').forEach(el => el.remove()); $('catchStart').disabled = false;
+    if (won) {
+      completed[2] = true; $('catchMessage').textContent = `Tuyệt vời! Bạn bắt được ${catchCount} hình đáng yêu — đã qua đủ 3/3 trò!`; $('catchStart').textContent = 'Đã hoàn thành ✓'; $('catchStart').disabled = true;
+      updateProgress(); setTimeout(() => setStage(3), 700);
+    } else {
+      $('catchMessage').textContent = `Bạn bắt được ${catchCount}/10 hình. Thử lại để mở khóa vòng quay nhé!`;
+      $('catchStart').textContent = 'Chơi lại 15 giây'; $('catchHint').hidden = false; $('catchHint').textContent = 'Chạm nhanh vào tim, hoa, mây và hộp quà 💞';
+    }
+  }
+  $('catchStart').addEventListener('click', startCatch);
+
+  // Wheel: the prize is an integer 1–100; canvas rotation is calculated so that
+  // the corresponding value's tick aligns exactly under the fixed top pointer.
+  const canvas = $('wheel'), ctx = canvas.getContext('2d');
+  const TAU = Math.PI * 2, baseAngle = -Math.PI / 2;
+  let wheelRotation = 0, spinning = false, spun = false, prize = null;
+  function drawWheel(rotation = wheelRotation) {
+    const c = 300, radius = 278; ctx.clearRect(0,0,600,600);
+    ctx.save(); ctx.translate(c,c); ctx.rotate(rotation);
+    // Soft jewel-toned sectors with a slightly brighter edge on each ten-point band.
+    const colors = ['#f7a8c7','#fff0f6','#e982ad','#ffe0eb','#efb0ca'];
+    for (let i=0; i<100; i++) {
+      const a0 = baseAngle + i / 100 * TAU, a1 = baseAngle + (i+1) / 100 * TAU;
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,radius,a0,a1); ctx.closePath();
+      const g = ctx.createRadialGradient(0,0,48,0,0,radius);
+      const shade = colors[Math.floor(i/10)%colors.length];
+      g.addColorStop(0, '#fff9fc'); g.addColorStop(.34, shade); g.addColorStop(1, i%10===0 ? '#d65a91' : shade);
+      ctx.fillStyle = g; ctx.fill();
+      ctx.strokeStyle = '#fff9fc'; ctx.lineWidth = 1.6; ctx.stroke();
+    }
+    // Delicate inner and outer rings make the wheel feel like a finished prize medallion.
+    ctx.beginPath(); ctx.arc(0,0,radius-5,0,TAU); ctx.strokeStyle = '#fff7df'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.beginPath(); ctx.arc(0,0,222,0,TAU); ctx.strokeStyle = 'rgba(167,50,100,.42)'; ctx.lineWidth = 2; ctx.stroke();
+    // Main marks: every ten is clear; all numbers remain attached to their exact prize tick.
+    for (let value=0; value<=100; value+=10) {
+      const angle = baseAngle + (value === 100 ? 99.3 : value) / 100 * TAU;
+      const inner = value % 20 === 0 ? 222 : 231;
+      ctx.beginPath(); ctx.moveTo(Math.cos(angle)*inner, Math.sin(angle)*inner); ctx.lineTo(Math.cos(angle)*radius, Math.sin(angle)*radius);
+      ctx.strokeStyle = '#9f2e60'; ctx.lineWidth = value % 20 === 0 ? 5 : 3; ctx.lineCap = 'round'; ctx.stroke();
+      // Small gold studs sit just inside the rim at each major mark.
+      ctx.beginPath(); ctx.arc(Math.cos(angle)*(radius-13), Math.sin(angle)*(radius-13), value%20===0 ? 4 : 2.6, 0, TAU);
+      ctx.fillStyle = '#fff0bd'; ctx.fill(); ctx.strokeStyle = '#bf8d42'; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.save(); ctx.translate(Math.cos(angle)*190, Math.sin(angle)*190); ctx.rotate(angle + Math.PI/2);
+      ctx.fillStyle = '#74264b'; ctx.font = '900 24px "Segoe UI", Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(255,255,255,.75)'; ctx.shadowBlur = 3;
+      ctx.fillText(String(value), 0, 0); ctx.restore();
+    }
+    // Tiny floral sparkles around the inner circle, kept clear of the number labels.
+    for (let i=0; i<20; i++) {
+      const a = i/20*TAU + Math.PI/20, r = 238;
+      const x=Math.cos(a)*r, y=Math.sin(a)*r;
+      ctx.save(); ctx.translate(x,y); ctx.rotate(a);
+      ctx.fillStyle = i%2===0 ? '#fff4c9' : '#fff9fc';
+      ctx.beginPath(); ctx.moveTo(0,-4); ctx.quadraticCurveTo(5,-2,0,4); ctx.quadraticCurveTo(-5,-2,0,-4); ctx.fill();
+      ctx.restore();
+    }
+    ctx.beginPath(); ctx.arc(0,0,radius,0,TAU); ctx.strokeStyle = '#a83268'; ctx.lineWidth = 5; ctx.stroke();
+    ctx.restore();
+  }
+  drawWheel();
+  function spinWheel() {
+    if (spinning || spun || !completed.every(Boolean)) return;
+    spinning = true; spun = true; $('spinButton').disabled = true; $('spinButton').textContent = 'Đang quay…'; $('wheelMessage').textContent = 'Bánh xe đang quay…';
+    prize = Math.floor(Math.random() * 100) + 1;
+    // Value is an exact angular coordinate on the 1–100 scale. At the end, the value tick sits under the pointer.
+    const valueAngle = baseAngle + (prize / 100) * TAU;
+    const currentMod = ((wheelRotation % TAU) + TAU) % TAU;
+    const desiredMod = ((-Math.PI/2 - valueAngle) % TAU + TAU) % TAU;
+    const extra = 6 * TAU + ((desiredMod - currentMod + TAU) % TAU);
+    const start = wheelRotation, target = start + extra, duration = 5600, startAt = performance.now();
+    function frame(now) {
+      const t = Math.min(1, (now-startAt)/duration), ease = 1 - Math.pow(1-t, 4);
+      wheelRotation = start + (target-start)*ease; drawWheel(wheelRotation);
+      if (t < 1) requestAnimationFrame(frame);
+      else {
+        wheelRotation = target; drawWheel(wheelRotation); spinning = false;
+        $('prizeNumber').textContent = String(prize); $('wheelMessage').textContent = `Kim đã dừng đúng tại mốc ${prize} xu. Chúc mừng bạn! 💗`;
+        $('spinButton').textContent = 'Đã dùng lượt quay ✓';
+        const token = `BLOOM20-${new Date().toISOString().slice(0,10).replaceAll('-','')}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
+        const ticket = `Phiếu: ${token}\nMini game: Bloom & Heart 20/10\nTiến trình: 3/3 trò chơi hoàn thành\nPhần thưởng hiển thị: ${prize} xu\nGhi chú: Chưa xác minh bởi máy chủ.`;
+        $('ticketCode').textContent = ticket; $('ticketCard').hidden = false;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  $('spinButton').addEventListener('click', spinWheel);
+  $('copyTicket').addEventListener('click', async () => {
+    const text = $('ticketCode').textContent;
+    try { await navigator.clipboard.writeText(text); $('copyStatus').textContent = 'Đã sao chép!'; }
+    catch { const range = document.createRange(); range.selectNodeContents($('ticketCode')); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); $('copyStatus').textContent = 'Đã chọn nội dung — hãy sao chép thủ công.'; }
+  });
+  updateProgress();
+})();
+</script>
+</body>
+</html>
